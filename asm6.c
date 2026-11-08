@@ -1209,9 +1209,22 @@ void labelwarnings(void) {
 
 //==============================================================================================================
 
+/*
 void showerror(char *errsrc,int errline) {
     error=1;
     fprintf(stderr,"[ERROR] %s(%i): %s\n",errsrc,errline,errmsg);
+
+    if(!listerr)//only list the first error for this line
+        listerr=errmsg;
+}
+*/
+void showerror(char *errsrc,int errline, char *exp_line) {
+    error=1;
+    fprintf(stderr,"[ERROR] %s(%i): %s\n",errsrc,errline,errmsg);
+
+    if (exp_line && *exp_line) {
+        fprintf(stderr, "%s\n", exp_line);
+    }
 
     if(!listerr)//only list the first error for this line
         listerr=errmsg;
@@ -1243,7 +1256,9 @@ void processfile(FILE *f, char* name) {
         if(nooutput)
             errmsg=NoENDE;
         if(errmsg)
-            showerror(name,nline);
+            //showerror(name,nline);
+			showerror(name, nline, NULL);
+
     }
 }
 
@@ -1265,7 +1280,8 @@ void processline(char *src,char *errsrc,int errline) {
 
     s=line;
     if(errmsg) {    //expandline error?
-        showerror(errsrc,errline);
+        //showerror(errsrc,errline);
+		showerror(errsrc, errline, line);
     } else do {
         if(makemacro) { //we're inside a macro definition
             p=getreserved(&s);
@@ -1358,7 +1374,8 @@ void processline(char *src,char *errsrc,int errline) {
         }
 badlabel:
         if(errmsg) {
-            showerror(errsrc,errline);
+            //showerror(errsrc,errline);
+			showerror(errsrc, errline, line);
         }
     } while(0);
 }
