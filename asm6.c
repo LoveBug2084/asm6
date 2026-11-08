@@ -1216,28 +1216,17 @@ static void print_errline(const char *line)
     while (end > line && (end[-1]=='\n' || end[-1]=='\r'))
         end--;
 
-    // expand tabs and find the failed word's column
-    char out[LINEMAX*8];
-    int col = -1, o = 0, c = 0;
     const char *hit = gvline[0] ? strstr(line, gvline) : NULL;
 
     for (const char *p = line; p < end; p++) {
-        if (p == hit) col = c;
-        if (*p == '\t') {
-            int n = 8 - (c % 8);
-            while (n--) { out[o++] = ' '; c++; }
-        } else {
-            out[o++] = *p;
-            c++;
-        }
+        fputc(*p, stderr);
     }
-    out[o] = 0;
+    fputc('\n', stderr);
 
-    fprintf(stderr, "  %s\n", out);
-    if (col >= 0) {
-        fprintf(stderr, "  ");
-        for (int i = 0; i < col; i++)
-            fputc(' ', stderr);
+    if (hit) {
+        for (const char *p = line; p < hit; p++) {
+            fputc(*p == '\t' ? '\t' : ' ', stderr);
+        }
         fprintf(stderr, "^\n");
     }
 }
