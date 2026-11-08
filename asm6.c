@@ -1209,6 +1209,39 @@ void labelwarnings(void) {
 
 //==============================================================================================================
 
+// Print source line with a caret under the failed word (gvline).
+static void print_errline(const char *line)
+{
+    const char *end = line + strlen(line);
+    while (end > line && (end[-1]=='\n' || end[-1]=='\r'))
+        end--;
+
+    // expand tabs and find the failed word's column
+    char out[LINEMAX*8];
+    int col = -1, o = 0, c = 0;
+    const char *hit = gvline[0] ? strstr(line, gvline) : NULL;
+
+    for (const char *p = line; p < end; p++) {
+        if (p == hit) col = c;
+        if (*p == '\t') {
+            int n = 8 - (c % 8);
+            while (n--) { out[o++] = ' '; c++; }
+        } else {
+            out[o++] = *p;
+            c++;
+        }
+    }
+    out[o] = 0;
+
+    fprintf(stderr, "  %s\n", out);
+    if (col >= 0) {
+        fprintf(stderr, "  ");
+        for (int i = 0; i < col; i++)
+            fputc(' ', stderr);
+        fprintf(stderr, "^\n");
+    }
+}
+
 /*
 void showerror(char *errsrc,int errline) {
     error=1;
@@ -1222,9 +1255,14 @@ void showerror(char *errsrc,int errline, char *exp_line) {
     error=1;
     fprintf(stderr,"[ERROR] %s(%i): %s\n",errsrc,errline,errmsg);
 
+/*
     if (exp_line && *exp_line) {
         fprintf(stderr, "%s\n", exp_line);
     }
+*/
+
+	if (exp_line && *exp_line)
+		print_errline(exp_line);
 
     if(!listerr)//only list the first error for this line
         listerr=errmsg;
